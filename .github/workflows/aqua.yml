@@ -1,0 +1,35 @@
+name: Aqua Security Scan
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  aqua-scan:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Aqua scanner
+        uses: docker://aquasec/aqua-scanner
+        with:
+          args: trivy fs --scanners vuln --format json --list-all-pkgs .
+        env:
+          AQUA_KEY: ${{ secrets.AQUA_KEY }}
+          AQUA_SECRET: ${{ secrets.AQUA_SECRET }}
+          # Update URLs for your region:
+          # US:   https://api.supply-chain.cloud.aquasec.com
+          # EU:   https://api.eu-1.supply-chain.cloud.aquasec.com  
+          # Asia: https://api.asia-1.supply-chain.cloud.aquasec.com
+          AQUA_URL: https://api.supply-chain.cloud.aquasec.com
+          # US:   https://api.cloudsploit.com
+          # EU:   https://eu-1.api.cloudsploit.com
+          # Asia: https://asia-1.api.cloudsploit.com
+          CSPM_URL: https://api.cloudsploit.com
+          GITHUB_TOKEN: ${{ github.token }}
+          TRIVY_RUN_AS_PLUGIN: aqua

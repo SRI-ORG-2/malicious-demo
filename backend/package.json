@@ -1,0 +1,10 @@
+{
+  "name": "demo-backend",
+  "version": "1.0.0",
+  "description": "Backend for malicious package testing",
+  "main": "server.js",
+  "dependencies": {
+    "express": "4.18.2",
+    "payu-ui-v2": "1.0.0"
+  }
+}
