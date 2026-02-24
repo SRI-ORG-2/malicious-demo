@@ -1,35 +1,29 @@
-name: Aqua Security Scan
-
-on:
-  pull_request:
-    branches: [main]
-  push:
-    branches: [main]
+name: Build & Test
+on: [pull_request,push]
 
 jobs:
-  aqua-scan:
+  scan:
+    name: Code Scans
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pull-requests: write
     steps:
-      - uses: actions/checkout@v4
-
+      - name: Checkout code
+        uses: actions/checkout@v2
+ 
       - name: Run Aqua scanner
         uses: docker://aquasec/aqua-scanner
         with:
-          args: trivy fs --scanners vuln --format json --list-all-pkgs .
+          args: trivy fs --scanners config,vuln,secret --db-repository=registry.aquasec.com/trivy-db:2 --checks-bundle-repository=registry.aquasec.com/trivy-checks:1 --java-db-repository=registry.aquasec.com/trivy-java-db:1 .
+          # To customize which severities to scan for, add the following flag: --severity UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL
+          # To enable SAST scanning, add: --sast
+          # To enable reachability scanning, add: --reachability
+          # To enable npm/dotnet non-lock file scanning, add: --package-json / --dotnet-proj
         env:
-          AQUA_KEY: ${{ secrets.AQUA_KEY }}
-          AQUA_SECRET: ${{ secrets.AQUA_SECRET }}
-          # Update URLs for your region:
-          # US:   https://api.supply-chain.cloud.aquasec.com
-          # EU:   https://api.eu-1.supply-chain.cloud.aquasec.com  
-          # Asia: https://api.asia-1.supply-chain.cloud.aquasec.com
-          AQUA_URL: https://api.supply-chain.cloud.aquasec.com
-          # US:   https://api.cloudsploit.com
-          # EU:   https://eu-1.api.cloudsploit.com
-          # Asia: https://asia-1.api.cloudsploit.com
-          CSPM_URL: https://api.cloudsploit.com
+          TRIVY_USERNAME: ${{ secrets.TRIVY_USERNAME }}
+          TRIVY_PASSWORD: ${{ secrets.TRIVY_PASSWORD }}
+          AQUA_KEY: ${{ secrets.AQUA_KEY_ASIA }}
+          AQUA_SECRET: ${{ secrets.AQUA_SECRET_ASIA }}
           GITHUB_TOKEN: ${{ github.token }}
-          TRIVY_RUN_AS_PLUGIN: aqua
+          AQUA_URL: https://api.asia-1.supply-chain.cloud.aquasec.com
+          CSPM_URL: https://asia-1.api.cloudsploit.com
+          TRIVY_RUN_AS_PLUGIN: 'aqua'
+          # For http/https proxy configuration add env vars: HTTP_PROXY/HTTPS_PROXY, CA-CRET (path to CA certificate)
